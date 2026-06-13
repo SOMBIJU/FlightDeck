@@ -31,7 +31,7 @@ body {
   position:fixed;
   inset:0 auto 0 0;
   width:var(--sidebar-w);
-  background:var(--brown);
+  background:linear-gradient(180deg, #3d1f0a 0%, #6B4226 55%, #8a5535 100%);
   color:#fff;
   display:flex;
   flex-direction:column;
@@ -77,7 +77,8 @@ body {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:14px 14px 14px 18px;
+  padding:0 14px 0 18px;
+  height:58px;
   border-bottom:1px solid rgba(255,255,255,.18);
   flex-shrink:0;
 }
@@ -262,8 +263,9 @@ body {
 }
 
 .topbar {
+  height:58px;
   min-height:58px;
-  background:var(--brown);
+  background:linear-gradient(90deg, #3d1f0a 0%, #6B4226 55%, #8a5535 100%);
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -304,28 +306,177 @@ body {
 
 /* Home page */
 .home-page {
-  max-width:860px;
+  max-width:900px;
   margin:0 auto;
-  padding:48px 28px;
+  padding:36px 28px 48px;
 }
 
 .home-hero {
+  position:relative;
+  border-radius:16px;
+  background:linear-gradient(135deg, #3d1f0a 0%, #6B4226 50%, #a06535 100%);
+  overflow:hidden;
   margin-bottom:48px;
 }
 
-.home-hero h2 {
-  font-size:28px;
-  font-weight:900;
-  color:var(--text);
-  margin-bottom:14px;
-  letter-spacing:-.01em;
+.hero-plane-bg {
+  position:absolute;
+  right:-20px; top:-20px;
+  pointer-events:none;
 }
 
-.home-hero p {
-  font-size:15px;
-  line-height:1.75;
-  color:var(--muted);
-  max-width:680px;
+.hero-content {
+  position:relative;
+  z-index:1;
+  padding:40px 44px 0;
+}
+
+.hero-title-row {
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:16px;
+}
+
+.hero-title {
+  font-size:34px;
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-.01em;
+  line-height:1.15;
+  margin:0 0 18px;
+}
+
+.hero-sub {
+  font-size:14px;
+  line-height:1.8;
+  color:rgba(255,255,255,.88);
+  max-width:640px;
+  margin-bottom:32px;
+}
+
+.hero-stats {
+  display:flex;
+  align-items:center;
+  gap:28px;
+  margin-bottom:40px;
+}
+
+.hero-stat-num {
+  font-size:28px;
+  font-weight:900;
+  color:#fff;
+  line-height:1;
+  margin-bottom:4px;
+}
+
+.hero-stat-label {
+  font-size:11px;
+  color:rgba(255,255,255,.5);
+  font-weight:600;
+  letter-spacing:.4px;
+  text-transform:uppercase;
+}
+
+.hero-stat-divider {
+  width:1px;
+  height:36px;
+  background:rgba(255,255,255,.18);
+}
+
+/* ── fancy airstrip ── */
+.hero-airstrip {
+  position:relative;
+  height:52px;
+  margin-top:4px;
+}
+
+.airstrip-surface {
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.28);
+  overflow:hidden;
+}
+
+.airstrip-edge {
+  position:absolute;
+  top:0; bottom:0;
+  width:6px;
+}
+
+.airstrip-edge-left  { left:0;  background:repeating-linear-gradient(180deg,#f59e0b 0px,#f59e0b 10px,transparent 10px,transparent 18px); }
+.airstrip-edge-right { right:0; background:repeating-linear-gradient(180deg,#f59e0b 0px,#f59e0b 10px,transparent 10px,transparent 18px); }
+
+.airstrip-centerline {
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  display:flex;
+  gap:14px;
+  align-items:center;
+}
+
+.airstrip-dash {
+  width:28px;
+  height:3px;
+  background:rgba(255,255,255,.55);
+  border-radius:2px;
+}
+
+.airstrip-lights {
+  position:absolute;
+  top:6px; left:36px; right:36px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.airstrip-light {
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:#60a5fa;
+  box-shadow:0 0 6px 2px rgba(96,165,250,.7);
+}
+
+/* ── takeoff plane ── */
+.takeoff-plane {
+  position:absolute;
+  bottom:10px;
+  left:4%;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  animation:takeoff 4s ease-in infinite;
+  transform-origin:left center;
+}
+
+@keyframes takeoff {
+  0%   { left:4%;   bottom:10px; transform:rotate(0deg);   opacity:1; }
+  60%  { left:55%;  bottom:12px; transform:rotate(-6deg);  opacity:1; }
+  85%  { left:80%;  bottom:28px; transform:rotate(-18deg); opacity:.7; }
+  100% { left:105%; bottom:52px; transform:rotate(-22deg); opacity:0; }
+}
+
+.takeoff-exhaust {
+  display:flex;
+  gap:3px;
+  align-items:center;
+}
+
+.exhaust-puff {
+  width:6px;
+  height:4px;
+  background:rgba(255,255,255,.35);
+  border-radius:50%;
+  animation:puff 0.5s ease-in-out infinite alternate;
+}
+
+.exhaust-puff:nth-child(2) { animation-delay:.15s; width:8px; height:5px; }
+.exhaust-puff:nth-child(3) { animation-delay:.3s;  width:5px; height:3px; opacity:.6; }
+
+@keyframes puff {
+  from { transform:scaleX(1);   opacity:.5; }
+  to   { transform:scaleX(1.4); opacity:.15; }
 }
 
 .home-contributors-title {
@@ -725,7 +876,11 @@ body {
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <button class="sidebar-brand-btn" onclick="goHome()" title="Home">FlightDeck</button>
-    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="transform:rotate(-45deg) translateY(-1px)">
+        <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+      </svg>
+    </button>
   </div>
 
   <nav id="sidebarNav"></nav>
@@ -779,8 +934,61 @@ body {
     <div id="homePage" style="display:none;">
       <div class="home-page">
         <div class="home-hero">
-          <h2>Welcome to FlightDeck</h2>
-          <p>FlightDeck is the unified analytics portal for all Tableau dashboards across the organisation. It brings together reporting from Sales R&M, Product Solutions, and Product Management into a single, searchable interface — so every team can find the right dashboard, request access, and act on insights without friction. Browse by category and subcategory, filter by audience level, and connect directly with the team that owns each view.</p>
+
+          <!-- big ghost plane -->
+          <div class="hero-plane-bg">
+            <svg viewBox="0 0 24 24" fill="white" width="220" height="220" style="transform:rotate(-30deg);opacity:.07">
+              <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+            </svg>
+          </div>
+
+          <!-- content -->
+          <div class="hero-content">
+
+            <h2 class="hero-title">Welcome to FlightDeck</h2>
+
+            <p class="hero-sub">FlightDeck is the unified analytics portal for all Tableau dashboards across the organisation. It brings together reporting from Sales R&M, Product Solutions, and Product Management into a single, searchable interface — so every team can find the right dashboard, request access, and act on insights without friction. Browse by category and subcategory, filter by audience level, and connect directly with the team that owns each view.</p>
+
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="hero-stat-num" id="heroStatDashboards">—</div>
+                <div class="hero-stat-label">Dashboards</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- fancy airstrip -->
+          <div class="hero-airstrip">
+            <div class="airstrip-surface">
+              <div class="airstrip-edge airstrip-edge-left"></div>
+              <div class="airstrip-edge airstrip-edge-right"></div>
+              <div class="airstrip-centerline">
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+                <div class="airstrip-dash"></div>
+              </div>
+              <div class="airstrip-lights">
+                <div class="airstrip-light"></div>
+                <div class="airstrip-light"></div>
+                <div class="airstrip-light"></div>
+                <div class="airstrip-light"></div>
+                <div class="airstrip-light"></div>
+                <div class="airstrip-light"></div>
+                <div class="airstrip-light"></div>
+                <div class="airstrip-light"></div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <div class="home-contributors-title">Contributors</div>
@@ -956,6 +1164,11 @@ function goHome() {
   document.getElementById("dashboardView").style.display = "none";
   document.getElementById("topbarCategoryLabel").textContent = "";
   renderContributors();
+  // Count total dashboards for hero stat
+  const total = Object.values(DATA).reduce((sum, cat) =>
+    sum + Object.values(cat.subcategories).reduce((s2, sub) => s2 + sub.dashboards.length, 0), 0);
+  const el = document.getElementById("heroStatDashboards");
+  if (el) el.textContent = total;
   currentCategory = null;
   openCategory = null;
   renderSidebar();
