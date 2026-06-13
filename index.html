@@ -197,11 +197,17 @@ body {
   border-left:4px solid transparent;
 }
 
-.sub-item:hover,
-.sub-item.active {
+.sub-item:hover {
   background:rgba(255,255,255,.14);
   color:#fff;
   border-left-color:rgba(255,255,255,.5);
+}
+
+.sub-item.active {
+  background:rgba(255,255,255,.92);
+  color:var(--brown);
+  border-left-color:var(--brown);
+  font-weight:700;
 }
 
 .sidebar-bottom {
@@ -273,7 +279,8 @@ body {
 .topbar {
   height:58px;
   min-height:58px;
-  background:linear-gradient(90deg, #3d1f0a 0%, #6B4226 55%, #8a5535 100%);
+  background:linear-gradient(90deg,rgba(61,31,10,.12) 0%,rgba(107,66,38,.08) 55%,rgba(138,85,53,.05) 100%);
+  border-bottom:1px solid rgba(107,66,38,.15);
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -295,7 +302,7 @@ body {
 .topbar-brand {
   font-size:20px;
   font-weight:900;
-  color:#fff;
+  color:var(--brown);
   letter-spacing:.02em;
   white-space:nowrap;
   flex:0 0 auto;
@@ -309,7 +316,7 @@ body {
 }
 
 .topbar-brand:hover {
-  background:rgba(255,255,255,.14);
+  background:rgba(107,66,38,.1);
 }
 
 /* Home page */
@@ -583,7 +590,8 @@ body {
   line-height:1.2;
   margin:0;
   letter-spacing:.01em;
-  opacity:.85;
+  color:var(--brown);
+  opacity:1;
 }
 
 .filter-bar {
@@ -638,14 +646,14 @@ body {
 }
 
 .search-box {
-  width:260px;
+  width:280px;
   display:flex;
   align-items:center;
+  background:rgba(61,31,10,.07);
+  border:1px solid rgba(107,66,38,.22);
+  border-radius:22px;
+  padding:6px 10px 6px 16px;
   gap:6px;
-  background:#fff;
-  color:var(--muted);
-  border-radius:7px;
-  padding:7px 12px;
 }
 
 .search-box input {
@@ -653,30 +661,37 @@ body {
   outline:0;
   width:100%;
   font-size:13px;
+  background:transparent;
+  color:var(--text);
+  font-family:"Amplitude","Segoe UI",Arial,sans-serif;
+}
+
+.search-box input::placeholder {
+  color:rgba(61,31,10,.45);
 }
 
 .search-button {
-  width:24px;
-  height:24px;
+  width:28px;
+  height:28px;
   border:0;
-  background:transparent;
+  background:rgba(107,66,38,.12);
   color:var(--brown);
   display:inline-flex;
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  border-radius:5px;
+  border-radius:50%;
   flex:0 0 auto;
   transition:.2s ease;
 }
 
 .search-button:hover {
-  background:var(--tag-bg);
+  background:rgba(107,66,38,.22);
 }
 
 .search-button svg {
-  width:15px;
-  height:15px;
+  width:14px;
+  height:14px;
 }
 
 .content {
@@ -1445,7 +1460,15 @@ function renderPage() {
       grid.innerHTML = `<div class="empty-state">No dashboards found.</div>`;
       return;
     }
-    grid.innerHTML = dashboards.map(d => renderCard(d)).join("");
+
+    grid.innerHTML = `
+      <div class="subcategory-section">
+        <div class="subcategory-section-title">${subcategory.label}</div>
+        <div class="dashboard-grid">
+          ${dashboards.map(d => renderCard(d)).join("")}
+        </div>
+      </div>
+    `;
   }
 }
 
@@ -1485,7 +1508,7 @@ goHome();
 <!-- FAQ Modal -->
 <div id="faqModal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);" onclick="closeFAQ(event)">
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:14px;width:min(560px,92vw);max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.22);">
-    <div style="background:var(--brown);padding:20px 24px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
+    <div style="background:linear-gradient(135deg,#3d1f0a 0%,#6B4226 55%,#8a5535 100%);padding:20px 24px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
       <span style="color:#fff;font-size:17px;font-weight:800;">Frequently Asked Questions</span>
       <button onclick="closeFAQ()" style="border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:16px;font-weight:700;">✕</button>
     </div>
@@ -1560,7 +1583,7 @@ function copyEmail() {
 <!-- Contact Modal -->
 <div id="contactModal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);" onclick="closeContact(event)">
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:14px;width:min(480px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.22);overflow:hidden;">
-    <div style="background:var(--brown);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="background:linear-gradient(135deg,#3d1f0a 0%,#6B4226 55%,#8a5535 100%);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;">
       <span style="color:#fff;font-size:17px;font-weight:800;">Contact</span>
       <button onclick="closeContact()" style="border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:16px;font-weight:700;">✕</button>
     </div>
