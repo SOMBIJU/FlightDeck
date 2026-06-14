@@ -210,7 +210,30 @@ body {
   font-weight:700;
 }
 
-.sidebar-bottom {
+.refresh-btn {
+  width:34px;
+  height:34px;
+  border:1px solid rgba(107,66,38,.22);
+  background:rgba(61,31,10,.07);
+  color:var(--brown);
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:.2s ease;
+}
+
+.refresh-btn:hover {
+  background:rgba(107,66,38,.15);
+}
+
+.refresh-btn.spinning svg {
+  animation:spin .7s linear infinite;
+}
+
+@keyframes spin { to { transform:rotate(360deg); } }
   margin-top:auto;
   display:flex;
   flex-direction:column;
@@ -963,6 +986,12 @@ body {
         </svg>
       </button>
     </div>
+    <button class="refresh-btn" onclick="refreshData()" title="Reload dashboards from CSV">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+    </button>
   </nav>
 
   <main class="content">
@@ -1051,142 +1080,75 @@ body {
 </div>
 
 <script>
-const DATA = {
-  sales: {
-    label: "Sales R&M",
-    desc: "Sales and Relationship Management analytics",
-    subcategories: {
-      "card-sales": {
-        label: "Card Sales & RM",
-        dashboards: [
-          {
-            title: "Card Acquisition Performance",
-            description: "Tracks new card issuance, activation rates, and acquisition funnel metrics across regions and product tiers.",
-            tag: "Card Sales",
-            levelTag: "Employee performance",
-            updated: "Jun 2026",
-            owner: "Cards Analytics",
-            link: "https://public.tableau.com/app/profile/soumyaranjan.sahoo/viz/OnlineRetailDashboard_16862429249540/sales",
-            contact: "cards-analytics@company.com"
-          },
-          {
-            title: "RM Portfolio Overview",
-            description: "Relationship manager portfolio health, spend penetration, activation, dormancy flags, and revenue contribution.",
-            tag: "Card RM",
-            levelTag: "Business Results",
-            updated: "Jun 2026",
-            owner: "RM Analytics",
-            link: "https://public.tableau.com/app/profile/soumyaranjan.sahoo/viz/DualAxis-Dashedlinechart/DualAxis-DashedLinechart",
-            contact: "rm-analytics@company.com"
-          }
-        ]
-      },
-      "merchant-sales": {
-        label: "Merchant Sales & RM",
-        dashboards: [
-          {
-            title: "Merchant Onboarding Tracker",
-            description: "End-to-end merchant onboarding pipeline from lead to go-live with SLA compliance and documentation status.",
-            tag: "Merchant Sales",
-            levelTag: "Employee performance",
-            updated: "Jun 2026",
-            owner: "Merchant Analytics",
-            link: "#tableau-merchant-onboarding",
-            contact: "merchant-analytics@company.com"
-          },
-          {
-            title: "Merchant GMV & TPV",
-            description: "Gross Merchandise Value and Transaction Payment Volume by merchant, MCC, acquiring channel, and settlement type.",
-            tag: "Merchant RM",
-            levelTag: "Business Results",
-            updated: "May 2026",
-            owner: "Merchant Analytics",
-            link: "#tableau-merchant-gmv",
-            contact: "merchant-analytics@company.com"
-          }
-        ]
-      }
-    }
-  },
+// ── CSV-driven data ──────────────────────────────────────────────────
+let DATA = {};
 
-  "product-solutions": {
-    label: "Product Solutions",
-    desc: "Product Solutions analytics and insights",
-    subcategories: {
-      "ps-overview": {
-        label: "Overview",
-        dashboards: [
-          {
-            title: "Product Solutions Performance",
-            description: "Holistic view of product solutions KPIs including adoption, revenue impact, and customer satisfaction.",
-            tag: "Overview",
-            levelTag: "Business Results",
-            updated: "Jun 2026",
-            owner: "Product Analytics",
-            link: "#tableau-ps-performance",
-            contact: "product-analytics@company.com"
-          }
-        ]
-      },
-      "ps-cx": {
-        label: "Customer Experience",
-        dashboards: [
-          {
-            title: "NPS & CSAT Tracker",
-            description: "NPS and CSAT score trends across touchpoints, product lines, and support channels.",
-            tag: "CX",
-            levelTag: "Business Results",
-            updated: "Jun 2026",
-            owner: "CX Analytics",
-            link: "#tableau-nps-csat",
-            contact: "cx-analytics@company.com"
-          }
-        ]
-      }
-    }
-  },
+function toSlug(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
 
-  "product-mgmt": {
-    label: "Product Management",
-    desc: "Product management metrics and roadmap analytics",
-    subcategories: {
-      "pm-roadmap": {
-        label: "Roadmap & Delivery",
-        dashboards: [
-          {
-            title: "Sprint & Delivery Velocity",
-            description: "Agile delivery metrics including sprint velocity, cycle time, and release frequency.",
-            tag: "Delivery",
-            levelTag: "Employee performance",
-            updated: "Jun 2026",
-            owner: "PMO Analytics",
-            link: "#tableau-sprint-velocity",
-            contact: "pmo@company.com"
-          }
-        ]
-      },
-      "pm-metrics": {
-        label: "Product Metrics",
-        dashboards: [
-          {
-            title: "Product Funnel Analytics",
-            description: "End-to-end conversion funnel from acquisition through activation, engagement, and retention.",
-            tag: "Metrics",
-            levelTag: "Business Results",
-            updated: "Jun 2026",
-            owner: "Product Analytics",
-            link: "#tableau-funnel",
-            contact: "product-analytics@company.com"
-          }
-        ]
-      }
+function parseCSV(text) {
+  const lines = text.trim().split("\n");
+  const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+  return lines.slice(1).map(line => {
+    const fields = [];
+    let cur = "", inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === "," && !inQuote) { fields.push(cur.trim()); cur = ""; }
+      else { cur += ch; }
     }
+    fields.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (fields[i] || "").replace(/^"|"$/g, ""); });
+    return obj;
+  }).filter(r => r.title && r.title.trim());
+}
+
+function buildDataFromRows(rows) {
+  const data = {};
+  rows.forEach(r => {
+    const catKey = toSlug(r.category);
+    const subKey = toSlug(r.subcategory);
+    if (!data[catKey]) data[catKey] = { label: r.category, desc: "", subcategories: {} };
+    if (!data[catKey].subcategories[subKey]) data[catKey].subcategories[subKey] = { label: r.subcategory, dashboards: [] };
+    data[catKey].subcategories[subKey].dashboards.push({
+      title: r.title, description: r.description, levelTag: r.filterTag,
+      updated: r.lastUpdated, contact: r.contactEmail,
+      requestAccess: r.requestAccessURL, link: r.dashboardURL,
+      owner: r.ownerTeam, status: r.status
+    });
+  });
+  return data;
+}
+
+function showCSVError() {
+  const b = document.createElement("div");
+  b.style.cssText = "position:fixed;bottom:20px;right:20px;background:#b91c1c;color:#fff;padding:14px 20px;border-radius:10px;font-size:13px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25);max-width:360px;line-height:1.5;";
+  b.innerHTML = `<strong>⚠️ dashboards.csv not found</strong><br>Make sure <code>dashboards.csv</code> is in the same GitHub folder as <code>index.html</code>.`;
+  document.body.appendChild(b);
+  setTimeout(() => b.remove(), 10000);
+}
+
+async function loadCSVAndInit() {
+  try {
+    const res = await fetch("dashboards.csv");
+    if (!res.ok) throw new Error("not found");
+    const text = await res.text();
+    DATA = buildDataFromRows(parseCSV(text));
+  } catch(e) {
+    console.warn("dashboards.csv failed:", e);
+    showCSVError();
+    DATA = {};
   }
-};
+  renderSidebar();
+  goHome();
+}
 
-let currentCategory = "sales";
-let openCategory = "sales";
-let currentSubcategory = "card-sales";
+let currentCategory = null;
+let openCategory = null;
+let currentSubcategory = null;
 let searchTerm = "";
 let currentLevelFilter = "all";
 let isHome = true;
@@ -1479,13 +1441,24 @@ function renderPage() {
 }
 
 function renderCard(d) {
+  const statusColour = {
+    "Live": "#16a34a", "In Development": "#d97706",
+    "Under Review": "#2563eb", "Deprecated": "#6b7280"
+  };
+  const statusBadge = d.status && d.status !== "Live"
+    ? `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${statusColour[d.status] || "#6b7280"}22;color:${statusColour[d.status] || "#6b7280"};font-weight:700;border:1px solid ${statusColour[d.status] || "#6b7280"}44;">${d.status}</span>`
+    : "";
+
   return `
     <article class="card">
       <div class="card-thumb" onclick="openDashboard('${d.link}')">
         Preview Unavailable
       </div>
       <div class="card-body">
-        <div class="card-title" onclick="openDashboard('${d.link}')">${d.title}</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+          <div class="card-title" onclick="openDashboard('${d.link}')" style="margin-bottom:0;">${d.title}</div>
+          ${statusBadge}
+        </div>
         <div class="card-description">${d.description}</div>
         <div class="card-meta">
           <span class="chip">${d.categoryLabel}</span>
@@ -1493,7 +1466,7 @@ function renderCard(d) {
         </div>
       </div>
       <div class="card-footer">
-        <a class="btn btn-primary" href="${getActionHref(d.requestAccess || d.access || d.contact)}" target="_blank">Request Access</a>
+        <a class="btn btn-primary" href="${getActionHref(d.requestAccess || d.contact)}" target="_blank">Request Access</a>
         <a class="btn btn-outline" href="${getActionHref(d.contact)}" target="_blank">Contact</a>
       </div>
     </article>
@@ -1507,8 +1480,15 @@ function openDashboard(link) {
 }
 
 
-renderSidebar();
-goHome();
+async function refreshData() {
+  const btn = document.querySelector(".refresh-btn");
+  if (btn) btn.classList.add("spinning");
+  await loadCSVAndInit();
+  if (btn) btn.classList.remove("spinning");
+}
+
+// Load data from dashboards.csv then initialise
+loadCSVAndInit();
 </script>
 
 <!-- FAQ Modal -->
