@@ -1090,8 +1090,13 @@ function toSlug(str) {
 }
 
 function parseCSV(text) {
+  // Strip BOM (Excel UTF-8 adds \uFEFF at start) and normalise line endings
+  text = text.replace(/^\uFEFF/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   const lines = text.trim().split("\n");
-  const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+  // Normalise headers: lowercase, strip spaces/underscores for flexible matching
+  const rawHeaders = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+  const headers = rawHeaders.map(h => h.toLowerCase().replace(/[\s_\/]+/g, ""));
+
   return lines.slice(1).map(line => {
     const fields = [];
     let cur = "", inQuote = false;
@@ -1103,23 +1108,38 @@ function parseCSV(text) {
     }
     fields.push(cur.trim());
     const obj = {};
-    headers.forEach((h, i) => { obj[h] = (fields[i] || "").replace(/^"|"$/g, ""); });
+    headers.forEach((h, i) => { obj[h] = (fields[i] || "").replace(/^"|"$/g, "").trim(); });
     return obj;
-  }).filter(r => r.title && r.title.trim());
+  }).filter(r => (r.title || r["dashboardtitle"]) && (r.title || r["dashboardtitle"]).trim());
 }
 
 function buildDataFromRows(rows) {
   const data = {};
   rows.forEach(r => {
-    const catKey = toSlug(r.category);
-    const subKey = toSlug(r.subcategory);
-    if (!data[catKey]) data[catKey] = { label: r.category, desc: "", subcategories: {} };
-    if (!data[catKey].subcategories[subKey]) data[catKey].subcategories[subKey] = { label: r.subcategory, dashboards: [] };
+    // Headers after normalisation: category, subcategory, dashboardtitle, description,
+    // filtertag, dashboardurl, requestaccessemailurl, contactemail, lastupdated, ownerteam, status
+    const category    = r.category || "";
+    const subcategory = r.subcategory || "";
+    const title       = r.dashboardtitle || r.title || "";
+    const description = r.description || "";
+    const filterTag   = r.filtertag || r.filter || "";
+    const dashURL     = r.dashboardurl || "#";
+    const reqAccess   = r.requestaccessemailurl || r.requestaccess || "";
+    const contact     = r.contactemail || r.contact || "";
+    const updated     = r.lastupdated || r.updated || "";
+    const owner       = r.ownerteam || r.owner || "";
+    const status      = r.status || "Live";
+
+    if (!category || !subcategory || !title) return;
+
+    const catKey = toSlug(category);
+    const subKey = toSlug(subcategory);
+    if (!data[catKey]) data[catKey] = { label: category, desc: "", subcategories: {} };
+    if (!data[catKey].subcategories[subKey]) data[catKey].subcategories[subKey] = { label: subcategory, dashboards: [] };
     data[catKey].subcategories[subKey].dashboards.push({
-      title: r.title, description: r.description, levelTag: r.filterTag,
-      updated: r.lastUpdated, contact: r.contactEmail,
-      requestAccess: r.requestAccessURL, link: r.dashboardURL,
-      owner: r.ownerTeam, status: r.status
+      title, description, levelTag: filterTag,
+      updated, contact, requestAccess: reqAccess,
+      link: dashURL, owner, status
     });
   });
   return data;
@@ -1135,10 +1155,13 @@ function showCSVError() {
 
 async function loadCSVAndInit() {
   try {
-    const res = await fetch("dashboards.csv");
+    const res = await fetch("dashboards.csv?" + Date.now()); // bust cache
     if (!res.ok) throw new Error("not found");
     const text = await res.text();
-    DATA = buildDataFromRows(parseCSV(text));
+    const rows = parseCSV(text);
+    DATA = buildDataFromRows(rows);
+    console.log(`✅ CSV loaded: ${rows.length} rows, ${Object.keys(DATA).length} categories`);
+    console.log("Categories:", Object.keys(DATA));
   } catch(e) {
     console.warn("dashboards.csv failed:", e);
     showCSVError();
